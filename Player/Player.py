@@ -17,6 +17,7 @@ import urllib.request
 import re
 import pytube
 from moviepy.audio.io.AudioFileClip import AudioFileClip
+from PIL import Image, ImageTk
 
 #   Initial Variables
 is_playing = None
@@ -355,18 +356,25 @@ def bg_color_set():
         volume_frame.config(bg=player_bg_color)
         volume_label.config(bg=player_bg_color)
 
+        back_btn.config(bg=player_bg_color)
+        next_btn.config(bg=player_bg_color)
+        pause_btn.config(bg=player_bg_color)
+        play_btn.config(bg=player_bg_color)
+
+        plus_btn.config(bg=player_bg_color)
+        less_btn.config(bg=player_bg_color)
+
+        button_bg = player_bg_color
+
         if player_bg_color == 'white':
-            back_btn.config(bg=player_bg_color)
-            next_btn.config(bg=player_bg_color)
-            pause_btn.config(bg=player_bg_color)
-            play_btn.config(bg=player_bg_color)
-
-            plus_btn.config(bg=player_bg_color)
-            less_btn.config(bg=player_bg_color)
-
-            button_bg = player_bg_color
-
             song_label_color = 'black'
+            music_label.config(bg=player_bg_color, fg='black')
+            pause_label.config(bg=player_bg_color, fg='black')
+
+            current_time.config(bg=player_bg_color, fg='black')
+            total_song_time.config(bg=player_bg_color, fg='black')
+
+            btn_black_set()
 
         elif player_bg_color == 'black':
             music_label.config(bg=player_bg_color, fg='white')
@@ -376,17 +384,7 @@ def bg_color_set():
             total_song_time.config(bg=player_bg_color, fg='white')
             song_label_color = 'white'
 
-        else:
-
-            back_btn.config(bg=player_bg_color)
-            next_btn.config(bg=player_bg_color)
-            pause_btn.config(bg=player_bg_color)
-            play_btn.config(bg=player_bg_color)
-
-            plus_btn.config(bg=player_bg_color)
-            less_btn.config(bg=player_bg_color)
-
-            button_bg = player_bg_color
+            btn_white_set()
 
         music_label.config(bg=player_bg_color, fg=song_label_color)
         pause_label.config(bg=player_bg_color, fg=song_label_color)
@@ -702,6 +700,89 @@ def song_label_color_info():
     new_window.mainloop()
 
 
+#   Function to change the buttons colors to black
+def btn_black_set():
+    black_bnt = ImageTk.PhotoImage(Image.open("back.png"))
+    back_btn.configure(image=black_bnt)
+    back_btn.image = black_bnt
+
+    black_bnt = ImageTk.PhotoImage(Image.open('play (1).png'))
+    play_btn.configure(image=black_bnt)
+    play_btn.photo = black_bnt
+
+    black_bnt = ImageTk.PhotoImage(Image.open("next.png"))
+    next_btn.configure(image=black_bnt)
+    next_btn.image = black_bnt
+
+    black_bnt = ImageTk.PhotoImage(Image.open("pause (1).png"))
+    pause_btn.configure(image=black_bnt)
+    pause_btn.image = black_bnt
+
+    black_bnt = ImageTk.PhotoImage(Image.open("minus.png"))
+    less_btn.configure(image=black_bnt)
+    less_btn.image = black_bnt
+
+    black_bnt = ImageTk.PhotoImage(Image.open("plus.png"))
+    plus_btn.configure(image=black_bnt)
+    plus_btn.image = black_bnt
+
+
+#   Function to change the buttons colors to white
+def btn_white_set():
+    white_bnt = ImageTk.PhotoImage(Image.open("white-back.png"))
+    back_btn.configure(image=white_bnt)
+    back_btn.image = white_bnt
+
+    white_bnt = ImageTk.PhotoImage(Image.open("white-play.png"))
+    play_btn.configure(image=white_bnt)
+    play_btn.image = white_bnt
+
+    white_bnt = ImageTk.PhotoImage(Image.open("white-next.png"))
+    next_btn.configure(image=white_bnt)
+    next_btn.image = white_bnt
+
+    white_bnt = ImageTk.PhotoImage(Image.open("white-pause.png"))
+    pause_btn.configure(image=white_bnt)
+    pause_btn.image = white_bnt
+
+    black_bnt = ImageTk.PhotoImage(Image.open("white-minus.png"))
+    less_btn.configure(image=black_bnt)
+    less_btn.image = black_bnt
+
+    black_bnt = ImageTk.PhotoImage(Image.open("white-plus.png"))
+    plus_btn.configure(image=black_bnt)
+    plus_btn.image = black_bnt
+
+
+# Create the windows with the options to change buttons color
+def bnt_color():
+    global new_window
+
+    new_window = Toplevel(root)
+    new_window.geometry('200x200')
+    if check_color(player_bg_color) is True and player_bg_color != 'black':
+        new_window['bg'] = player_bg_color
+    else:
+        new_window['bg'] = 'white'
+
+    my_label = Label(new_window, text="Chose the color you \n"
+                                      "want for your buttons", fg='black')
+    bolded = font.Font(weight='bold', size='8')  # will use the default font
+    my_label.config(font=bolded)
+    my_label.pack(pady=50)
+
+    btn_frame = Frame(new_window, bg=player_bg_color, borderwidth=0)
+    btn_frame.pack()
+
+    black_button = Button(btn_frame, text='Black', command=btn_black_set)
+    black_button.pack(side=LEFT)
+
+    white_button = Button(btn_frame, text='White', command=btn_white_set)
+    white_button.pack(side=RIGHT)
+
+    new_window.mainloop()
+
+
 #   END OF THE PERSONALIZATION FUNCTIONS
 #   END OF THE PERSONALIZATION FUNCTIONS
 #   END OF THE PERSONALIZATION FUNCTIONS
@@ -969,6 +1050,11 @@ set_color_menu.add_command(label='Playlist Viewer color', command=viewer_color)
 set_color_menu.add_command(label='Playlist Bar Color', command=bar_color)
 set_color_menu.add_command(label='Selected letter color', command=slc_letter_color)
 set_color_menu.add_command(label='song information color', command=song_label_color_info)
+
+# Buttons colors set
+btn_color_menu = Menu(my_menu)
+my_menu.add_cascade(label='Buttons', menu=btn_color_menu)
+btn_color_menu.add_command(label='Change color of buttons', command=bnt_color)
 
 root.mainloop()
 
