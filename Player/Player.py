@@ -18,6 +18,7 @@ import re
 import pytube
 from moviepy.audio.io.AudioFileClip import AudioFileClip
 from PIL import Image, ImageTk
+import random
 
 #   Initial Variables
 is_playing = None
@@ -920,6 +921,36 @@ def download_window():
     new_window.mainloop()
 
 
+#   Shuffle function
+def shuffle():
+    global imported_songs
+
+    #   Stop the player and clean the listbox before shuffle
+    try:
+        pygame.mixer.music.stop()
+    except AttributeError:
+        pass
+    music_label.config(text='', bg=player_bg_color, fg=song_label_color)
+    current_time.config(text='', bg=player_bg_color, fg=song_label_color)
+    root.title('PyPlayer')
+    song_box.delete(0, END)
+
+    #   Receive the playlist and shuffle the songs order
+    shuffle_playlist = imported_songs
+    shuffle = random.shuffle(shuffle_playlist)
+
+    for song in shuffle_playlist:
+        sg = str(song).replace('\n', '')
+        song_box.insert(END, sg)
+
+    pygame.mixer.music.stop()
+
+
+#   Lyrics function
+def lyrics():
+    pass
+
+
 #   Buttons background color variable control
 if player_bg_color != 'black':
     button_bg = player_bg_color
@@ -991,6 +1022,9 @@ play_img = PhotoImage(file='play.png')
 plus_vol = PhotoImage(file='plus.png')
 less_vol = PhotoImage(file='minus.png')
 
+shuffle_img = PhotoImage(file='shuffle-black.png')
+mic_img = PhotoImage(file='mic-black.png')
+
 #   Player control buttons frames
 controls_frame = Frame(root, bg=player_bg_color)
 controls_frame.pack()
@@ -1015,9 +1049,15 @@ volume_frame.pack()
 plus_btn = Button(volume_frame, image=plus_vol, borderwidth=0, bg=button_bg, command=plus_volume)
 less_btn = Button(volume_frame, image=less_vol, borderwidth=0, bg=button_bg, command=less_volume)
 
+shuffle_btn = Button(volume_frame, image=shuffle_img, borderwidth=0, bg=button_bg, command=shuffle)
+mic_btn = Button(volume_frame, image=mic_img, borderwidth=0, bg=button_bg, command=lyrics)
+
 #   Player volume buttons position
 less_btn.grid(row=0, column=1, pady=30, padx=10)
 plus_btn.grid(row=0, column=2, pady=30, padx=10)
+
+shuffle_btn.grid(row=0, column=4, pady=30, padx=25)
+mic_btn.grid(row=0, column=0, pady=10, padx=25)
 
 #   Player Menu
 my_menu = Menu(root)
@@ -1058,7 +1098,7 @@ btn_color_menu.add_command(label='Change color of buttons', command=bnt_color)
 
 root.mainloop()
 
-#   Save songs tha already have been imported
+#   Save songs that already have been imported
 with open('save_songs.txt', 'w', encoding='utf-8', errors='ignore') as songs:
     for sg in imported_songs:
         songs.write(sg)
