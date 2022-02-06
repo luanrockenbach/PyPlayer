@@ -165,7 +165,6 @@ def current_song_length():
             #   Shows the current time on time format
             current_time.config(text=time.strftime('%M:%S', time.gmtime(int(current))), bg=player_bg_color,
                                 fg=song_label_color, font=font_size)
-
     #   Update the Slider position
     elif int(current) != int(slider.get()) + 1 and is_paused is False:
         slider.config(to=int(song_total_length), value=int(slider.get()))
@@ -191,7 +190,7 @@ def current_song_length():
 
 
 #   Slider function
-def slider_function(x):
+def slider_function():
     pygame.mixer.music.set_pos(int(slider.get()))
 
 
@@ -229,6 +228,8 @@ def play():
     is_paused = False
     root.title('PyPlayer - ' + music_name)
 
+    pause_label.config(text='', bg=player_bg_color, fg=song_label_color)
+
     stoped = False
 
 
@@ -245,26 +246,12 @@ def next_song():
     # Discover the nome of next song
     music_name = song_box.get(next)
 
-    song = f'C:\\Users\\{user_name}\\Music\\{music_name}.mp3'
-
-    pygame.mixer.music.load(song)
-    pygame.mixer.music.play(loops=0)
-
-    is_playing = music_name
-    stoped = False
-
-    slider.config(to=song_total_length, value=0)
-
-    bolded = font.Font(weight='bold', size='10', underline=1)
-    music_label.config(text=music_name, bg=player_bg_color, fg=song_label_color, font=bolded)
-
-    is_paused = False
-    root.title('PyPlayer - ' + music_name)
-
     #   Move selection bar
     song_box.select_clear(0, END)
     song_box.activate(next)
     song_box.select_set(next, last=None)
+
+    play()
 
 
 #   Forward song button
@@ -280,26 +267,12 @@ def back_song():
     # Discover the nome of next song
     music_name = song_box.get(back)
 
-    song = f'C:\\Users\\{user_name}\\Music\\{music_name}.mp3'
-
-    pygame.mixer.music.load(song)
-    pygame.mixer.music.play(loops=0)
-
-    is_playing = music_name
-    stoped = False
-
-    slider.config(to=song_total_length, value=0)
-
-    bolded = font.Font(weight='bold', size='10', underline=1)
-    music_label.config(text=music_name, bg=player_bg_color, fg=song_label_color, font=bolded)
-
-    is_paused = False
-    root.title('PyPlayer - ' + music_name)
-
     #   Move selection bar
     song_box.select_clear(0, END)
     song_box.activate(back)
     song_box.select_set(back, last=None)
+
+    play()
 
 
 #   Pause song function
@@ -398,7 +371,6 @@ def bg_color_set():
         style.configure('MyStyle.Horizontal.TScale', background=player_bg_color, troughcolor=song_label_color,
                         lightcolor='black', darkcolor='black', bordercolor='black')
         slider.config(style='MyStyle.Horizontal.TScale')
-
 
     except:
         new_window.destroy()
@@ -727,6 +699,14 @@ def btn_black_set():
     plus_btn.configure(image=black_bnt)
     plus_btn.image = black_bnt
 
+    black_bnt = ImageTk.PhotoImage(Image.open("shuffle-black.png"))
+    shuffle_btn.configure(image=black_bnt)
+    shuffle_btn.image = black_bnt
+
+    black_bnt = ImageTk.PhotoImage(Image.open("mic-black.png"))
+    mic_btn.configure(image=black_bnt)
+    mic_btn.image = black_bnt
+
 
 #   Function to change the buttons colors to white
 def btn_white_set():
@@ -746,13 +726,21 @@ def btn_white_set():
     pause_btn.configure(image=white_bnt)
     pause_btn.image = white_bnt
 
-    black_bnt = ImageTk.PhotoImage(Image.open("white-minus.png"))
-    less_btn.configure(image=black_bnt)
-    less_btn.image = black_bnt
+    white_bnt = ImageTk.PhotoImage(Image.open("white-minus.png"))
+    less_btn.configure(image=white_bnt)
+    less_btn.image = white_bnt
 
-    black_bnt = ImageTk.PhotoImage(Image.open("white-plus.png"))
-    plus_btn.configure(image=black_bnt)
-    plus_btn.image = black_bnt
+    white_bnt = ImageTk.PhotoImage(Image.open("white-plus.png"))
+    plus_btn.configure(image=white_bnt)
+    plus_btn.image = white_bnt
+
+    white_bnt = ImageTk.PhotoImage(Image.open("shuffle-white.png"))
+    shuffle_btn.configure(image=white_bnt)
+    shuffle_btn.image = white_bnt
+
+    white_bnt = ImageTk.PhotoImage(Image.open("mic-white.png"))
+    mic_btn.configure(image=white_bnt)
+    mic_btn.image = white_bnt
 
 
 # Create the windows with the options to change buttons color
@@ -814,20 +802,14 @@ def less_volume():
     volume_label.config(text=int(new_vol * 100), bg=player_bg_color, fg=song_label_color)
 
 
-#   Function to show "Downloading..." in the player
-def download_status():
-    #   Download info
-    bolded = font.Font(weight='bold', size='10', underline=1)
-    music_label.config(text='Downloading... ', bg=player_bg_color, fg=song_label_color, font=bolded)
-
-
 #   Search and downloading the music from youtube
 def search_and_down():
     global artist_input
     global music_name_input
     global new_window
 
-    download_status()
+    bolded = font.Font(weight='bold', size='10', underline=1)
+    music_label.config(text='Downloading... ', bg=player_bg_color, fg=song_label_color, font=bolded)
 
     #   Getting the input write on the entry and replace the spaces for YouTube search style
     artist = artist_input.get().replace(' ', '+')
@@ -927,7 +909,7 @@ def shuffle():
 
     #   Stop the player and clean the listbox before shuffle
     try:
-        pygame.mixer.music.stop()
+        stop()
     except AttributeError:
         pass
     music_label.config(text='', bg=player_bg_color, fg=song_label_color)
@@ -943,7 +925,7 @@ def shuffle():
         sg = str(song).replace('\n', '')
         song_box.insert(END, sg)
 
-    pygame.mixer.music.stop()
+    play()
 
 
 #   Lyrics function
@@ -951,11 +933,10 @@ def lyrics():
     pass
 
 
-#   Buttons background color variable control
-if player_bg_color != 'black':
-    button_bg = player_bg_color
-else:
-    button_bg = 'white'
+#   Change buttons color if initial color equal to black
+if player_bg_color == 'black':
+    btn_white_set()
+
 
 #   Playlist box
 song_box = Listbox(root, bg=playlist_viewer_color, fg=letter_color, width=61,
@@ -1030,10 +1011,10 @@ controls_frame = Frame(root, bg=player_bg_color)
 controls_frame.pack()
 
 #   Player control buttons
-back_btn = Button(controls_frame, image=back_img, borderwidth=0, command=back_song, bg=button_bg)
-pause_btn = Button(controls_frame, image=pause_img, borderwidth=0, command=pause, bg=button_bg)
-play_btn = Button(controls_frame, image=play_img, borderwidth=0, command=play, bg=button_bg)
-next_btn = Button(controls_frame, image=next_img, borderwidth=0, command=next_song, bg=button_bg)
+back_btn = Button(controls_frame, image=back_img, borderwidth=0, command=back_song, bg=player_bg_color)
+pause_btn = Button(controls_frame, image=pause_img, borderwidth=0, command=pause, bg=player_bg_color)
+play_btn = Button(controls_frame, image=play_img, borderwidth=0, command=play, bg=player_bg_color)
+next_btn = Button(controls_frame, image=next_img, borderwidth=0, command=next_song, bg=player_bg_color)
 
 #   Player control buttons position
 back_btn.grid(row=0, column=0, padx=10)
@@ -1046,11 +1027,11 @@ volume_frame = Frame(root, bg=player_bg_color)
 volume_frame.pack()
 
 #   Player volume buttons
-plus_btn = Button(volume_frame, image=plus_vol, borderwidth=0, bg=button_bg, command=plus_volume)
-less_btn = Button(volume_frame, image=less_vol, borderwidth=0, bg=button_bg, command=less_volume)
+plus_btn = Button(volume_frame, image=plus_vol, borderwidth=0, bg=player_bg_color, command=plus_volume)
+less_btn = Button(volume_frame, image=less_vol, borderwidth=0, bg=player_bg_color, command=less_volume)
 
-shuffle_btn = Button(volume_frame, image=shuffle_img, borderwidth=0, bg=button_bg, command=shuffle)
-mic_btn = Button(volume_frame, image=mic_img, borderwidth=0, bg=button_bg, command=lyrics)
+shuffle_btn = Button(volume_frame, image=shuffle_img, borderwidth=0, bg=player_bg_color, command=shuffle)
+mic_btn = Button(volume_frame, image=mic_img, borderwidth=0, bg=player_bg_color, command=lyrics)
 
 #   Player volume buttons position
 less_btn.grid(row=0, column=1, pady=30, padx=10)
