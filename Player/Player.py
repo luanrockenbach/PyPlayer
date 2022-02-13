@@ -15,10 +15,11 @@ from colour import Color
 from tkinter import ttk
 import urllib.request
 import re
-import pytube
 from moviepy.audio.io.AudioFileClip import AudioFileClip
 from PIL import Image, ImageTk
 import random
+import pytube
+
 
 #   Initial Variables
 is_playing = None
@@ -33,6 +34,7 @@ artist_input = ''
 music_name_input = ''
 current = 0
 stoped = True
+slider_active = False
 
 #   Initialize pygame
 pygame.mixer.init()
@@ -138,6 +140,7 @@ def remove_all_songs():
 def current_song_length():
     global song_total_length
     global stoped
+    global slider_active
 
     song_box.activate(ACTIVE)
     song_box.select_set(ACTIVE, last=None)
@@ -163,15 +166,20 @@ def current_song_length():
         if is_paused is False:
             slider.config(to=int(song_total_length), value=int(current))
             #   Shows the current time on time format
-            current_time.config(text=time.strftime('%M:%S', time.gmtime(int(current))), bg=player_bg_color,
+            current_time.config(text=current_song_intime_format, bg=player_bg_color,
                                 fg=song_label_color, font=font_size)
     #   Update the Slider position
     elif int(current) != int(slider.get()) + 1 and is_paused is False:
-        slider.config(to=int(song_total_length), value=int(slider.get()))
-        slider_pos_in_time = time.strftime('%M:%S', time.gmtime(int(slider.get())))
-        current_time.config(text=slider_pos_in_time, bg=player_bg_color, fg=song_label_color, font=font_size)
+        if slider_active is True:
+            slider.config(to=int(song_total_length), value=int(slider.get()))
+            slider_pos_in_time = time.strftime('%M:%S', time.gmtime(int(slider.get())))
+            current_time.config(text=slider_pos_in_time, bg=player_bg_color, fg=song_label_color, font=font_size)
 
-        slider.config(to=int(song_total_length), value=int(slider.get()) + 1)
+            slider.config(to=int(song_total_length), value=int(slider.get()) + 1)
+        elif slider_active is False:
+            slider.config(to=int(song_total_length), value=int(current))
+            current_time.config(text=current_song_intime_format, bg=player_bg_color,
+                                fg=song_label_color, font=font_size)
 
     #   Converting the total song length to time format
     length_converted_totime = time.strftime('%M:%S', time.gmtime(int(song_total_length)))
@@ -190,13 +198,19 @@ def current_song_length():
 
 
 #   Slider function
-def slider_function():
+def slider_function(x):
+    global slider_active
+
+    slider_active = True
     pygame.mixer.music.set_pos(int(slider.get()))
 
 
 #   Stop Menu button
 def stop():
     global stoped
+    global slider_active
+
+    slider_active = False
 
     pygame.mixer.music.stop()
     music_label.config(text='', bg=player_bg_color)
@@ -212,6 +226,9 @@ def play():
     global is_paused
     global song_total_length
     global stoped
+    global slider_active
+
+    slider_active = False
 
     music_name = song_box.get(ACTIVE)
     song = f'C:\\Users\\{user_name}\\Music\\{music_name}.mp3'
@@ -337,6 +354,9 @@ def bg_color_set():
 
         plus_btn.config(bg=player_bg_color)
         less_btn.config(bg=player_bg_color)
+
+        shuffle_btn.config(bg=player_bg_color)
+        mic_btn.config(bg=player_bg_color)
 
         button_bg = player_bg_color
 
@@ -824,22 +844,22 @@ def search_and_down():
 
     #   Searching on YouTube
     ytb_search = urllib.request.urlopen(f'https://www.youtube.com/results?search_query={artist}+'
-                                        f'{music_name + "audio+oficial"}')
+                                        f'{music_name + "+official+audio"}')
     #   Getting the results ids
     video_ids = re.findall(r'watch\?v=(\S{11})', ytb_search.read().decode())
     #   Full Url of the music to download
     music_url = f'https://www.youtube.com/watch?v={video_ids[0]}'
 
     #   Start the download
-    stream = pytube.YouTube(url=music_url).streams.get_audio_only()
-    filename = stream.title
+    #stream = pytube.YouTube(url=music_url).streams.filter(only_audio=True)[0]
+    #filename = stream.title
     list_of_remove = ['(Official Video)', '[Official Audio]', '(Official Music Video)',
                       '[Official Music Video]', '[OFFICIAL VIDEO]', '(Áudio Oficial)', '(Audio Oficial)',
                       '(audio oficial)', '(Official Audio)']
     for name in list_of_remove:
         filename = filename.replace(name, '')
 
-    stream.download(f'C:/Users/{user_name}/Music/', filename)
+    #stream.download(f'C:/Users/{user_name}/Music/', filename)
 
     #   Conversion
     clip = AudioFileClip(f'C:\\Users\\{user_name}\\Music\\' + filename)
@@ -931,11 +951,6 @@ def shuffle():
 #   Lyrics function
 def lyrics():
     pass
-
-
-#   Change buttons color if initial color equal to black
-if player_bg_color == 'black':
-    btn_white_set()
 
 
 #   Playlist box
@@ -1050,7 +1065,7 @@ my_menu.add_cascade(label="Add Song", menu=add_song_menu)
 add_song_menu.add_command(label='Add one song to the playlist', command=add_song)
 #   Add many songs menu
 add_song_menu.add_command(label='Add many songs to the playlist', command=add_many_songs)
-add_song_menu.add_command(label='Download new song', command=download_window)
+#add_song_menu.add_command(label='Download new song', command=download_window)
 
 #   Remove song menu
 remove_song_menu = Menu(my_menu)
@@ -1076,6 +1091,10 @@ set_color_menu.add_command(label='song information color', command=song_label_co
 btn_color_menu = Menu(my_menu)
 my_menu.add_cascade(label='Buttons', menu=btn_color_menu)
 btn_color_menu.add_command(label='Change color of buttons', command=bnt_color)
+
+#   Change buttons color if initial color equal to black
+if player_bg_color == 'black':
+    btn_white_set()
 
 root.mainloop()
 
