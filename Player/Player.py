@@ -35,6 +35,7 @@ music_name_input = ''
 current = 0
 stoped = True
 slider_active = False
+repeat_loop = 0
 
 #   Initialize pygame
 pygame.mixer.init()
@@ -188,10 +189,11 @@ def current_song_length():
     total_song_time.config(text=length_converted_totime, bg=player_bg_color, fg=song_label_color, font=font_size)
 
     volume_label.config(text='', bg=player_bg_color, fg=song_label_color)
+    repeat_label.config(text='', bg=player_bg_color, fg=song_label_color)
 
     if current >= song_total_length or current_song_intime_format >= length_converted_totime:
         if stoped is False:
-            next_song()
+            next_song(True)
 
     #   Repeat the song current time
     current_time.after(1000, current_song_length)
@@ -251,7 +253,7 @@ def play():
 
 
 #   Next song button
-def next_song():
+def next_song(auto_next=False):
     global is_playing
     global is_paused
     global stoped
@@ -260,13 +262,21 @@ def next_song():
     next = song_box.curselection()
     #   Add one to the current song
     next = next[0] + 1
-    # Discover the nome of next song
-    music_name = song_box.get(next)
 
-    #   Move selection bar
-    song_box.select_clear(0, END)
-    song_box.activate(next)
-    song_box.select_set(next, last=None)
+    if repeat_loop == 4 and song_box.get(next) == '':
+        #   Move selection bar
+        song_box.select_clear(0, END)
+        song_box.activate([0])
+        song_box.select_set([0], last=None)
+    elif repeat_loop == 5 and auto_next is True:
+        song_box.select_clear(0, END)
+        song_box.activate(next - 1)
+        song_box.select_set(next - 1, last=None)
+    else:
+        #   Move selection bar
+        song_box.select_clear(0, END)
+        song_box.activate(next)
+        song_box.select_set(next, last=None)
 
     play()
 
@@ -346,6 +356,7 @@ def bg_color_set():
         time_frame.config(bg=player_bg_color)
         volume_frame.config(bg=player_bg_color)
         volume_label.config(bg=player_bg_color)
+        repeat_label.config(bg=player_bg_color)
 
         back_btn.config(bg=player_bg_color)
         next_btn.config(bg=player_bg_color)
@@ -356,7 +367,7 @@ def bg_color_set():
         less_btn.config(bg=player_bg_color)
 
         shuffle_btn.config(bg=player_bg_color)
-        mic_btn.config(bg=player_bg_color)
+        repeat_btn.config(bg=player_bg_color)
 
         button_bg = player_bg_color
 
@@ -723,9 +734,9 @@ def btn_black_set():
     shuffle_btn.configure(image=black_bnt)
     shuffle_btn.image = black_bnt
 
-    black_bnt = ImageTk.PhotoImage(Image.open("mic-black.png"))
-    mic_btn.configure(image=black_bnt)
-    mic_btn.image = black_bnt
+    black_bnt = ImageTk.PhotoImage(Image.open("repeat.png"))
+    repeat_btn.configure(image=black_bnt)
+    repeat_btn.image = black_bnt
 
 
 #   Function to change the buttons colors to white
@@ -758,9 +769,9 @@ def btn_white_set():
     shuffle_btn.configure(image=white_bnt)
     shuffle_btn.image = white_bnt
 
-    white_bnt = ImageTk.PhotoImage(Image.open("mic-white.png"))
-    mic_btn.configure(image=white_bnt)
-    mic_btn.image = white_bnt
+    white_bnt = ImageTk.PhotoImage(Image.open("repeat-white.png"))
+    repeat_btn.configure(image=white_bnt)
+    repeat_btn.image = white_bnt
 
 
 # Create the windows with the options to change buttons color
@@ -851,15 +862,15 @@ def search_and_down():
     music_url = f'https://www.youtube.com/watch?v={video_ids[0]}'
 
     #   Start the download
-    #stream = pytube.YouTube(url=music_url).streams.filter(only_audio=True)[0]
-    #filename = stream.title
+    stream = pytube.YouTube(url=music_url).streams.get_audio_only()
+    filename = stream.title
     list_of_remove = ['(Official Video)', '[Official Audio]', '(Official Music Video)',
                       '[Official Music Video]', '[OFFICIAL VIDEO]', '(Áudio Oficial)', '(Audio Oficial)',
                       '(audio oficial)', '(Official Audio)']
     for name in list_of_remove:
         filename = filename.replace(name, '')
 
-    #stream.download(f'C:/Users/{user_name}/Music/', filename)
+    stream.download(f'C:/Users/{user_name}/Music/', filename)
 
     #   Conversion
     clip = AudioFileClip(f'C:\\Users\\{user_name}\\Music\\' + filename)
@@ -948,9 +959,20 @@ def shuffle():
     play()
 
 
-#   Lyrics function
-def lyrics():
-    pass
+#   Repeat function
+def repeat():
+    global repeat_loop
+    if repeat_loop == 0:
+        repeat_loop = 4
+        repeat_label.config(text='Repeat PLAYLIST activated', bg=player_bg_color, fg=song_label_color)
+    elif repeat_loop == 4:
+        repeat_loop = 5
+        repeat_label.config(text='Repeat SONG activated', bg=player_bg_color, fg=song_label_color)
+    elif repeat_loop == 5:
+        repeat_loop = 0
+        repeat_label.config(text='Repeat DISABLED', bg=player_bg_color, fg=song_label_color)
+
+    print(repeat_loop)
 
 
 #   Playlist box
@@ -1019,7 +1041,7 @@ plus_vol = PhotoImage(file='plus.png')
 less_vol = PhotoImage(file='minus.png')
 
 shuffle_img = PhotoImage(file='shuffle-black.png')
-mic_img = PhotoImage(file='mic-black.png')
+repeat_img = PhotoImage(file='repeat.png')
 
 #   Player control buttons frames
 controls_frame = Frame(root, bg=player_bg_color)
@@ -1046,14 +1068,17 @@ plus_btn = Button(volume_frame, image=plus_vol, borderwidth=0, bg=player_bg_colo
 less_btn = Button(volume_frame, image=less_vol, borderwidth=0, bg=player_bg_color, command=less_volume)
 
 shuffle_btn = Button(volume_frame, image=shuffle_img, borderwidth=0, bg=player_bg_color, command=shuffle)
-mic_btn = Button(volume_frame, image=mic_img, borderwidth=0, bg=player_bg_color, command=lyrics)
+repeat_btn = Button(volume_frame, image=repeat_img, borderwidth=0, bg=player_bg_color, command=repeat)
 
 #   Player volume buttons position
 less_btn.grid(row=0, column=1, pady=30, padx=10)
 plus_btn.grid(row=0, column=2, pady=30, padx=10)
 
 shuffle_btn.grid(row=0, column=4, pady=30, padx=25)
-mic_btn.grid(row=0, column=0, pady=10, padx=25)
+repeat_btn.grid(row=0, column=0, pady=10, padx=25)
+
+repeat_label = Label(root, text='', bg=player_bg_color)
+repeat_label.pack()
 
 #   Player Menu
 my_menu = Menu(root)
@@ -1065,7 +1090,7 @@ my_menu.add_cascade(label="Add Song", menu=add_song_menu)
 add_song_menu.add_command(label='Add one song to the playlist', command=add_song)
 #   Add many songs menu
 add_song_menu.add_command(label='Add many songs to the playlist', command=add_many_songs)
-#add_song_menu.add_command(label='Download new song', command=download_window)
+add_song_menu.add_command(label='Download new song', command=download_window)
 
 #   Remove song menu
 remove_song_menu = Menu(my_menu)
