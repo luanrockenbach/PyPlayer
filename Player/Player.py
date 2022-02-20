@@ -36,6 +36,7 @@ current = 0
 stoped = True
 slider_active = False
 repeat_loop = 0
+dict_directory = {}
 
 #   Initialize pygame
 pygame.mixer.init()
@@ -78,8 +79,7 @@ def add_song():
     song_dir = filedialog.askopenfilename(initialdir=f'C:\\Users\\{user_name}\\Music\\', title='Choose A Song')
 
     #   Removing file path and .mp3 from music name to show in listbox
-    song = song_dir.replace(f'C:/Users/{user_name}/Music/', '')
-    song = song.replace('.mp3', '')
+    song = os.path.basename(song_dir).replace('.mp3', '')
 
     if song + '\n' not in imported_songs:
         imported_songs.append(song + '\n')
@@ -89,6 +89,8 @@ def add_song():
     bolded = font.Font(weight='bold', size='9')  # will use the default font
     song_box.config(font=bolded)
 
+    dict_directory[song] = song_dir
+
 
 #   Add many songs to the playlist
 def add_many_songs():
@@ -96,16 +98,18 @@ def add_many_songs():
 
     #   Loop for remove file path and .mp3 from many music names to show in listbox
     for song in songs_dir:
-        song = song.replace(f'C:/Users/{user_name}/Music/', '')
-        song = song.replace('.mp3', '')
+        song_name = os.path.basename(song)
+        song_name = song_name.replace('.mp3', '')
 
         if song + '\n' not in imported_songs:
-            imported_songs.append(song + '\n')
-            song_box.insert(END, song)
+            imported_songs.append(song_name + '\n')
+            song_box.insert(END, song_name)
 
         #   Turning song box strings into bold
         bolded = font.Font(weight='bold', size='9')  # will use the default font
         song_box.config(font=bolded)
+
+        dict_directory[song_name] = song
 
 
 #   Remove Song Menu
@@ -118,9 +122,11 @@ def remove_song():
         current_time.config(text='', bg=player_bg_color, fg=song_label_color)
         root.title('PyPlayer')
 
-    song_to_erase = song_box.get(song_box.curselection())
+    song_to_erase = song_box.get(ACTIVE)
     imported_songs.remove(song_to_erase + '\n')
     song_box.delete(ANCHOR)
+
+    dict_directory.pop(song_to_erase)
 
 
 #   Remove all Songs of the Playlist
@@ -135,6 +141,7 @@ def remove_all_songs():
 
     song_box.delete(0, END)
     imported_songs.clear()
+    dict_directory.clear()
 
 
 #   Get the current time of the playing song
@@ -233,9 +240,8 @@ def play():
     slider_active = False
 
     music_name = song_box.get(ACTIVE)
-    song = f'C:\\Users\\{user_name}\\Music\\{music_name}.mp3'
 
-    pygame.mixer.music.load(song)
+    pygame.mixer.music.load(dict_directory[music_name])
     pygame.mixer.music.play(loops=0)
     current_song_length()
 
@@ -883,6 +889,8 @@ def search_and_down():
         imported_songs.append(filename + '\n')
         song_box.insert(END, filename)
 
+        dict_directory[filename] = f'C:\\Users\\{user_name}\\Music\\' + filename + '.mp3'
+
         #   Move selection bar
         song_box.select_clear(0, END)
         song_box.activate(END)
@@ -993,6 +1001,9 @@ try:
             #   Turning song box strings into bold
             bolded = font.Font(weight='bold', size='9')  # will use the default font
             song_box.config(font=bolded)
+
+    with open('directory.json', 'r', encoding='utf-8', errors='ignore') as jfile:
+        dict_directory = json.load(jfile)
 
 except:
     pass
@@ -1140,3 +1151,6 @@ with open('theme.json', 'w', encoding='utf-8', errors='ignore') as theme_file:
     theme['song_info_label'] = song_label_color
 
     json.dump(theme, theme_file)
+
+with open('directory.json', 'w', encoding='utf-8', errors='ignore') as directory:
+    json.dump(dict_directory, directory)
