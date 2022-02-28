@@ -24,7 +24,8 @@
  - [x] Add the download song menu
  - [x] Create file to save the added songs
  - [x] Fix the color set bug
- - [ ] Add white buttons
+ - [x] Add white buttons
+ - [ ] Add control by keybord buttons
  
 ...
  
