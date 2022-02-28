@@ -179,11 +179,10 @@ def current_song_length():
     #   Update the Slider position
     elif int(current) != int(slider.get()) + 1 and is_paused is False:
         if slider_active is True:
-            slider.config(to=int(song_total_length), value=int(slider.get()))
-            slider_pos_in_time = time.strftime('%M:%S', time.gmtime(int(slider.get())))
+            slider_pos = slider.get()
+            slider.config(to=int(song_total_length), value=int(slider_pos + 1))
+            slider_pos_in_time = time.strftime('%M:%S', time.gmtime(int(slider_pos + 1)))
             current_time.config(text=slider_pos_in_time, bg=player_bg_color, fg=song_label_color, font=font_size)
-
-            slider.config(to=int(song_total_length), value=int(slider.get()) + 1)
         elif slider_active is False:
             slider.config(to=int(song_total_length), value=int(current))
             current_time.config(text=current_song_intime_format, bg=player_bg_color,
