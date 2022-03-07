@@ -1,8 +1,7 @@
 #   LUAN ROCKENBACH DA SILVA
 #   26/09/2021
+
 #   importing librarys
-
-
 import pygame
 from tkinter import *
 from tkinter import filedialog
@@ -19,7 +18,7 @@ from moviepy.audio.io.AudioFileClip import AudioFileClip
 from PIL import Image, ImageTk
 import random
 import pytube
-
+import ffmpeg
 
 #   Initial Variables
 is_playing = None
